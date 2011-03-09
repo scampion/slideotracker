@@ -46,24 +46,28 @@ class SlideoTracker:
                                for id, p in self.slidepaths.items()])
         print '#done'
         print
+        self.debug = debug
 
     def track(self):
         for frame_id, (fkp, fvt), frame in self._video_feats():
-            print "#in progress, frame", frame_id
-            for slide_id in self.slidepaths.keys():
+            if self.debug:
+                print "#in progress, frame", frame_id
+            for slide_id, slide_path in self.slidepaths.items():
+                if self.debug:
+                    print "#\t", self.slidepaths[slide_id], " slide in progress"
+
                 f, t = self._best_kp(slide_id, (fkp, fvt))
-                print "#\t", self.slidepaths[slide_id], " slide in progress"
-                rtest = self._ransac_test(f, t)
 
-                #DEBUG
-                sim = self.slideims[slide_id]
-                self._save(frame, sim, f, t,
-                           "%05d-%s.jpg" % (frame_id, str(slide_id)))
-                #DEBUG
-
-                if rtest:
-                    print frame_id, self.slidepaths[slide_id]
+                if self._ransac_test(f, t):                    
+                    yield frame_id, self.slidepaths[slide_id]
+                    if self.debug:
+                        print "MATCH : ", frame_id, slide_path
                     break
+
+                if self.debug:
+                    sim = self.slideims[slide_id]
+                    self._save(frame, sim, f, t,
+                               "%05d-%s.jpg" % (frame_id, str(slide_id)))
 
     def _best_kp(self, slide_id, (fkp, fvt)):
         tkp, tvt = self.slidefeats[slide_id]
@@ -83,7 +87,8 @@ class SlideoTracker:
 
     def _ransac_test(self, fkp, tkp):
         minp = max(self.MIN_H_POINTS, int(len(fkp) * self.RATIO_HOM))
-        print "#\t debug ", minp, len(fkp)
+        if self.debug :
+            print "#\tnb of points %i | min nb points %i" % (len(fkp), minp)
         fsize, tsize = [a.shape[0] for a in [fkp, tkp]]
         fkp, tkp = [a.T  for a in [fkp, tkp]]
         fkp, tkp = [np.vstack((a, np.ones((1, s))))
@@ -152,15 +157,13 @@ class SlideoTracker:
         rim.save(ofile) 
 
 
-
-
 def save(outfile, track_results, precision, format):
     '''
     Save method in JavaScript or CSV
     '''
     o = open(outfile, 'w')
     if format == 'js':
-        frames = precision * np.array(track_results.keys())
+        frames = np.array(track_results.keys())
         frames = [int(i) for i in frames]
         o.writelines('slides=%s;\n' % str(track_results.values()))
         o.writelines('frames=%s;\n' % frames)
@@ -193,8 +196,8 @@ if __name__ == '__main__':
                       "line in the video path, others lines are paths on " +
                       "slide images (use ImageMagick, to convert pdf " +
                       "in several images)")
-    parser.add_option("-p", "--precision", action="store", type='int',
-                      dest='precision', default=25,
+    parser.add_option("-r", "--rate", action="store", type='int',
+                      dest='rate', default=25,
                       help='precision in number of frame (default 25)')
     parser.add_option("-o", "--out", action="store", dest='outfile',
                       help='output file name, by default results.js ',
@@ -205,9 +208,14 @@ if __name__ == '__main__':
     parser.add_option("-d", "--debug", action="store_true", dest='debug',
                       help='debug trace', default=False)
     (options, args) = parser.parse_args()
+    
+    videopath, slidepath = parse_index(options.index)
+    slideo = SlideoTracker(videopath, slidepath, 
+                           frame_rate=options.rate,
+                           debug=options.debug)
+    results = dict([(frame_id, slidepath) 
+                    for frame_id, slidepath in slideo.track()])
 
-    logger = logging.getLogger('slideotracker')
-    if options.debug:
-        dgf = os.path.basename(options.index)
-        dgf += '-' + str(options.precision)
-        logging.basicConfig(filename=dgf + '.log', level=logging.DEBUG)
+    save(options.outfile, results, options.rate, options.format)
+
+    

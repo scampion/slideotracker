@@ -20,7 +20,8 @@ class TestSlideoTracker(unittest.TestCase):
     def setUp(self):
         self.index = 'tests/data/index/test.txt'
         videopath, slidepath = st.parse_index(self.index)
-        self.slideo = st.SlideoTracker(videopath, slidepath, frame_rate=1000)
+        self.slideo = st.SlideoTracker(videopath, slidepath, frame_rate=1000,
+                                       debug=True)
 
         #self.index = 'tests/data/index/short_test.txt'
         #videopath, slidepath = st.parse_index(self.index)
