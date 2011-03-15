@@ -4,7 +4,6 @@ http://videolectures.net/kolokviji_ewels_tsd/
 http://videolectures.net/wsdm08_garcia_molina_wim/
 http://videolectures.net/ida07_saul_mufl1/
 http://videolectures.net/icml09_kolter_rfsl/
-http://videolectures.net/mloss08_hunter_mat/
 http://videolectures.net/icml09_cortes_clkh/
 http://videolectures.net/nips09_white_gcdss/
 http://videolectures.net/www2010_leskovec_eca/

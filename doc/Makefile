@@ -72,6 +72,12 @@ latex:
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
 
+text:
+	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
+	@echo
+	@echo "Text files done."
+
+
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
 	@echo
@@ -88,5 +94,6 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-push: html
-	scp -r ./build/html/* scm:/home/groups/slideotracker/htdocs
+push: html text
+	scp -r  $(BUILDDIR)/html/* scm:/home/groups/slideotracker/htdocs
+	cp  source/index.rst ../README.rst

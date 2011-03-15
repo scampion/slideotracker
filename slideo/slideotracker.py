@@ -27,6 +27,11 @@ np.set_printoptions(suppress=True, precision=2)
 
 
 class SlideoTracker:
+    """
+    This software enables to synchronize slides with the corresponding 
+    video recording.
+    slideotracker = slides + video + tracking
+    """
     HESSIAN_THRESHOLD = 100
     RATIO_KNN = 0.85
     RATIO_HOM = 0.2
@@ -58,16 +63,17 @@ class SlideoTracker:
 
                 f, t = self._best_kp(slide_id, (fkp, fvt))
 
+                if self.debug:
+                    sim = self.slideims[slide_id]
+                    self._save(frame, sim, f, t,
+                               "%05d-%s.jpg" % (frame_id, str(slide_id)))
                 if self._ransac_test(f, t):                    
                     yield frame_id, self.slidepaths[slide_id]
                     if self.debug:
                         print "MATCH : ", frame_id, slide_path
                     break
 
-                if self.debug:
-                    sim = self.slideims[slide_id]
-                    self._save(frame, sim, f, t,
-                               "%05d-%s.jpg" % (frame_id, str(slide_id)))
+
 
     def _best_kp(self, slide_id, (fkp, fvt)):
         tkp, tvt = self.slidefeats[slide_id]
@@ -155,67 +161,3 @@ class SlideoTracker:
         for (x1, y1), (x2, y2) in zip(fkp, tkp):
             d.line(((x1,y1),(x2+fim.size[0],y2)), fill='red')            
         rim.save(ofile) 
-
-
-def save(outfile, track_results, precision, format):
-    '''
-    Save method in JavaScript or CSV
-    '''
-    o = open(outfile, 'w')
-    if format == 'js':
-        frames = np.array(track_results.keys())
-        frames = [int(i) for i in frames]
-        o.writelines('slides=%s;\n' % str(track_results.values()))
-        o.writelines('frames=%s;\n' % frames)
-
-    elif format == 'csv':
-        o.writelines("#slide_number;star_frame;end_frame\n")
-        current_frame = 0
-        for sn, fn in track_results.items():
-            sn, sf, ef = sn, precision * current_frame, precision * fn
-            o.writelines("%i;%i;%i\n" % (sn, sf, ef))
-            current_frame = fn
-    else:
-        raise NotImplementedError('Output format %s not available' % format)
-    o.close()
-
-
-def parse_index(index):
-    index_file = open(index)
-    video_path = index_file.readline().rstrip()
-    slides_paths = dict([(i, path.rstrip())
-                         for i, path in enumerate(index_file)])
-    return video_path, slides_paths
-
-if __name__ == '__main__':
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option('-i', '--index', action='store', type='string',
-                      dest="index", metavar="index",
-                      help="index file is a simple text file, the first " +
-                      "line in the video path, others lines are paths on " +
-                      "slide images (use ImageMagick, to convert pdf " +
-                      "in several images)")
-    parser.add_option("-r", "--rate", action="store", type='int',
-                      dest='rate', default=25,
-                      help='precision in number of frame (default 25)')
-    parser.add_option("-o", "--out", action="store", dest='outfile',
-                      help='output file name, by default results.js ',
-                      default='results.js')
-    parser.add_option("-f", "--format", action="store", dest='format',
-                      help='output file format js (default),csv ',
-                      default='js')
-    parser.add_option("-d", "--debug", action="store_true", dest='debug',
-                      help='debug trace', default=False)
-    (options, args) = parser.parse_args()
-    
-    videopath, slidepath = parse_index(options.index)
-    slideo = SlideoTracker(videopath, slidepath, 
-                           frame_rate=options.rate,
-                           debug=options.debug)
-    results = dict([(frame_id, slidepath) 
-                    for frame_id, slidepath in slideo.track()])
-
-    save(options.outfile, results, options.rate, options.format)
-
-    
