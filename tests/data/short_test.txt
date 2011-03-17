@@ -1,0 +1,5 @@
+videos/svideo.avi
+slides/slide-0.jpg
+slides/slide-1.jpg
+slides/slide-2.jpg
+slides/slide-3.jpg

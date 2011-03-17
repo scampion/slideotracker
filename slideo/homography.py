@@ -97,8 +97,9 @@ def H_from_ransac(fp, tp, model, maxiter=1000, match_theshold=10, minp=10):
     model = ransac_model()
     #group corresponding points
     data = np.vstack((fp, tp))
-    H = ransac.ransac(data.T, model, 4, maxiter, match_theshold, minp)
-    return H
+    H, inliers = ransac.ransac(data.T, model, 4, maxiter, match_theshold, minp,
+                               return_all=True)
+    return H, inliers
 
 
 def normalize(pt):

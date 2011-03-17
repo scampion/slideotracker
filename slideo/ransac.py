@@ -32,7 +32,14 @@ import scipy.linalg # use numpy if scipy unavailable
 ## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def ransac(data,model,n,k,t,d,debug=False,return_all=False):
+class RansacError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+
+def ransac(data, model, n, k, t, d, debug=False, return_all=False):
     """fit model parameters to data using the RANSAC algorithm
     
 This implementation written from pseudocode found at
@@ -79,12 +86,13 @@ return bestfit
     besterr = numpy.inf
     best_inlier_idxs = None
     while iterations < k:
-        maybe_idxs, test_idxs = random_partition(n,data.shape[0])
+        maybe_idxs, test_idxs = random_partition(n, data.shape[0])
         maybeinliers = data[maybe_idxs,:]
         test_points = data[test_idxs]
         maybemodel = model.fit(maybeinliers)
-        test_err = model.get_error( test_points, maybemodel)
-        also_idxs = test_idxs[test_err < t] # select indices of rows with accepted points
+        test_err = model.get_error(test_points, maybemodel)
+        #select indices of rows with accepted points
+        also_idxs = test_idxs[test_err < t] 
         alsoinliers = data[also_idxs,:]
         if debug:
             print 'test_err.min()',test_err.min()
@@ -103,13 +111,13 @@ return bestfit
                 best_inlier_idxs = numpy.concatenate( (maybe_idxs, also_idxs) )
         iterations+=1
     if bestfit is None:
-        raise ValueError("did not meet fit acceptance criteria")
+        raise RansacError("Did not meet fit acceptance criteria")
     if return_all:
         return bestfit, {'inliers':best_inlier_idxs}
     else:
         return bestfit
 
-def random_partition(n,n_data):
+def random_partition(n, n_data):
     """return n random rows of data (and also the other len(data)-n rows)"""
     all_idxs = numpy.arange( n_data )
     numpy.random.shuffle(all_idxs)

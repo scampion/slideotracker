@@ -17,7 +17,9 @@
 
 # Contact : sebastien.campion@gmail.com or seb@scamp.fr
 import os
+import slideo as sd
 from slideo import SlideoTracker
+import numpy as np 
 
 def save(outfile, track_results, precision, format):
     '''
@@ -41,15 +43,6 @@ def save(outfile, track_results, precision, format):
         raise NotImplementedError('Output format %s not available' % format)
     o.close()
 
-
-def parse_index(index):
-    abspath = os.path.abspath(os.path.dirname(index))
-    index_file = open(index)    
-    video_path = os.path.join(abspath, index_file.readline().rstrip())
-    slides_paths = dict([(i, os.path.join(abspath, path.rstrip()))
-                          for i, path in enumerate(index_file)])
-    return video_path, slides_paths
-
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser()
@@ -72,9 +65,9 @@ if __name__ == '__main__':
                       help='debug trace', default=False)
     (options, args) = parser.parse_args()
     
-    videopath, slidepath = parse_index(options.index)
+    videopath, slidepath = sd.parse_index(options.index)
     print '#videopath %s' % videopath
-    print '#slidespath %s' % str(slidepath)
+    print '#nb of slides %i' % len(slidepath)
     slideo = SlideoTracker(videopath, slidepath, 
                            frame_rate=options.rate,
                            debug=options.debug)

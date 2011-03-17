@@ -1,5 +1,0 @@
-tests/data/videos/svideo.avi
-tests/data/slides/slide-0.jpg
-tests/data/slides/slide-1.jpg
-tests/data/slides/slide-2.jpg
-tests/data/slides/slide-3.jpg

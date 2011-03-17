@@ -1,26 +1,26 @@
 import unittest
 import logging
 import os
-import slideotracker as st
+from slideo import slideotracker as st
 
 logging.basicConfig(level=logging.DEBUG)
 
-
 class TestMain(unittest.TestCase):
     def setUp(self):
-        self.index = 'tests/data/index/short_test.txt'
+        self.index = 'tests/data/short_test.txt'
 
     def test_parse_index(self):
-        video, slides = st.parse_index(self.index)
-        
-        self.assertTrue(video == 'tests/data/videos/svideo.avi' and 
+        video, slides = st.parse_index(self.index)        
+        print len(slides), 'nb slide'
+        print video 
+        self.assertTrue(video.endswith('svideo.avi') and 
                         len(slides) == 4) 
 
 class TestSlideoTracker(unittest.TestCase):
     def setUp(self):
-        self.index = 'tests/data/index/test.txt'
+        self.index = 'tests/data/test.txt'
         videopath, slidepath = st.parse_index(self.index)
-        self.slideo = st.SlideoTracker(videopath, slidepath, frame_rate=1000,
+        self.slideo = st.SlideoTracker(videopath, slidepath, frame_rate=25,
                                        debug=True)
 
         #self.index = 'tests/data/index/short_test.txt'
@@ -28,12 +28,12 @@ class TestSlideoTracker(unittest.TestCase):
         #self.slideo = st.SlideoTracker(videopath, slidepath, frame_rate=50)
         
     def test_video_feats(self):
-        for frame_id, feats in self.slideo._video_feats():
+        for frame_id, (fkp, fvt), frame in self.slideo._video_feats():
             if frame_id > 50:
                 break 
         self.assertTrue(frame_id == 75)
 
-    def test_video_feats(self):
+    def test_video_track(self):
         self.slideo.track()
 
             
