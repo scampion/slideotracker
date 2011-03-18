@@ -25,6 +25,7 @@ from scikits.learn import neighbors as knn
 import homography
 import ransac
 import operator
+import time
 
 np.set_printoptions(suppress=True, precision=2)
 
@@ -36,12 +37,10 @@ class SlideoTracker:
     """
     HESSIAN_THRESHOLD = 100
     RATIO_KNN = 0.8
-    #RATIO_KNN = 0.0
-    RANSAC_ITER = 1000
-    RATIO_HOM = 0.1
-    MIN_H_POINTS = 12
-    MATCH_THRESHOLD = 5
-    THRESHOLD = 0.2
+    RANSAC_ITER_RATIO = 0.6
+    MIN_H_POINTS = 4
+    MATCH_THRESHOLD = 200
+    THRESHOLD = 0.5
 
     def __init__(self, videopath, slidepaths, frame_rate=25, debug=False):
         self.frame_rate = frame_rate
@@ -65,19 +64,42 @@ class SlideoTracker:
                 print "#FRAME", frame_id
 
             for slide_id, slide_path in self.slidepaths.items():
+                st0 = time.time()
                 f, t = self._best_kp(slide_id, (fkp, fvt))
                 #f, t = self._format(slide_id, fkp)
-                tkp, tvt = self.slidefeats[slide_id]
-                d = math.sqrt(fkp.shape[0] * tkp.shape[0])
+                st1 = time.time()
 
-                scores[slide_id] = self._ransac(f, t) / f.shape[0]
+                d = math.sqrt(f.shape[0] * t.shape[0])
+                #array must have the same shape
+                #TODO improve ransac ?
+                t0 = time.time()
+                if f.shape[0] > t.shape[0] :
+                    t2 = np.resize(t, f.shape)
+                    score = self._ransac(f, t2) 
+                elif f.shape[0] < t.shape[0] :
+                    f2 = np.resize(f, t.shape) 
+                    score = self._ransac(f2, t) 
+                else:
+                    score = self._ransac(f, t) 
+
+                t1 = time.time()            
+
+                scores[slide_id] = score / d
                 if self.debug:
-                    print '#\tscore : %0.2f %s %s' % (scores[slide_id],
-                                                      os.path.basename(slide_path),
-                                                      slide_id)
+                    print '#%0.3f sec | %04d inli | %04d ip | %04d op | %0.3f sim | %0.3f sec | %05s | %s' % (
+                        t1-t0, 
+                        score,
+                        f.shape[0],
+                        t.shape[0],
+                        scores[slide_id],
+                        t1-t0+st1-st0,
+                        slide_id, 
+                        os.path.basename(slide_path))
+
                     sim = self.slideims[slide_id]
                     self._save(frame, sim, f, t,
                                "%05d-%s.jpg" % (frame_id, str(slide_id)))
+
 
             slide_id = max(scores.iteritems(), key=operator.itemgetter(1))[0]
             if scores[slide_id]  > self.THRESHOLD :
@@ -99,35 +121,28 @@ class SlideoTracker:
                     for a
                     in [fkp[best_fkp_ind], tkp[best_tkp_ind]]]
         return fkp, tkp
-
-#     def _format(self, slide_id, fkp):
-#         tkp, tvt = self.slidefeats[slide_id]
-#         #select only x, y components
-#         fkp, tkp = [np.hsplit(a, [2, ])[0]
-#                     for a
-#                     in [fkp, tkp]]
-
-#         #array must have the same shape
-#         #TODO improve ransac ?
-#         if fkp.shape[0] > tkp.shape[0] :
-#             tkp = np.resize(tkp, fkp.shape)
-#         else:
-#             fkp = np.resize(fkp, tkp.shape)        
-
-#         return fkp, tkp
+ 
+    def _format(self, slide_id, fkp):
+        tkp, tvt = self.slidefeats[slide_id]
+        #select only x, y components
+        fkp, tkp = [np.hsplit(a, [2, ])[0]
+                    for a
+                    in [fkp, tkp]]
+        return fkp, tkp
 
     def _ransac(self, fkp, tkp):
-        minp = max(self.MIN_H_POINTS, int(len(fkp) * self.RATIO_HOM))        
+        #minp = max(self.MIN_H_POINTS, int(len(fkp) * self.RATIO_HOM))        
         fsize, tsize = [a.shape[0] for a in [fkp, tkp]]
         fkp, tkp = [a.T  for a in [fkp, tkp]]
         fkp, tkp = [np.vstack((a, np.ones((1, s))))
                     for a, s in zip([fkp, tkp], [fsize, tsize])]
+        maxiter = self.RANSAC_ITER_RATIO * fsize
         try:
             H, r = homography.H_from_ransac(fkp, tkp,
                                             homography.ransac_model(),
-                                            maxiter=self.RANSAC_ITER,
+                                            maxiter=maxiter,
                                             match_theshold=self.MATCH_THRESHOLD,
-                                            minp=minp)
+                                            minp=self.MIN_H_POINTS)
         except ransac.RansacError as e:
             return 0
         except np.linalg.LinAlgError:

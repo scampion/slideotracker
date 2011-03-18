@@ -40,6 +40,7 @@ class RansacError(Exception):
 
 
 def ransac(data, model, n, k, t, d, debug=False, return_all=False):
+#def ransac(data, model, n, k, t, d, debug=True, return_all=False):
     """fit model parameters to data using the RANSAC algorithm
     
 This implementation written from pseudocode found at
@@ -98,8 +99,8 @@ return bestfit
             print 'test_err.min()',test_err.min()
             print 'test_err.max()',test_err.max()
             print 'numpy.mean(test_err)',numpy.mean(test_err)
-            print 'iteration %d:len(alsoinliers) = %d'%(
-                iterations,len(alsoinliers))
+            print 'iteration %d:len(alsoinliers) = %d'%(iterations,
+                                                        len(alsoinliers))
         if len(alsoinliers) > d:
             betterdata = numpy.concatenate( (maybeinliers, alsoinliers) )
             bettermodel = model.fit(betterdata)
