@@ -20,8 +20,8 @@ import numpy as np
 import math
 import os
 import logging
-import cv
 from scikits.learn import neighbors as knn
+import cv
 import homography
 import ransac
 import operator
@@ -47,7 +47,6 @@ class SlideoTracker:
     SCALE_RATIO_WEIGHT = 1
        
     THRESHOLD = 1
-
     def __init__(self, videopath, slidepaths, frame_rate=25, debug=False):
         self.frame_rate = frame_rate
         self.videopath = videopath
@@ -146,7 +145,7 @@ class SlideoTracker:
                                             maxiter=maxiter,
                                             match_theshold=self.MATCH_THRESHOLD,
                                             minp=self.MIN_H_POINTS)
-        except ransac.RansacError as e:
+        except ransac.RansacError:
             return 0, 0 
         except np.linalg.LinAlgError:
             return 0, 0         

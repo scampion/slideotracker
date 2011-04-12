@@ -5,16 +5,13 @@
 
 Introduction
 ============
-This software enables to synchronize slides with the corresponding video recording 
+Based on computer vision algorithms, this software enables to synchronize slides with the corresponding video recording.
 
-*slideotracker = slides + video + tracking* 
+.. note:: slideotracker = slides + video + tracking
 
-Source code
-===========
-
-.. warning:: Available soon 
-
-INRIA Gforge project : https://gforge.inria.fr/projects/slideotracker
+Licence
+=======
+GNU AFFERO GENERAL PUBLIC LICENSE v3
 
 Screencast
 ==========
@@ -23,6 +20,51 @@ Screencast
 
   <iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/74yZJ63h-Ow" frameborder="0" allowfullscreen></iframe>
 
+
+Download
+========
+
+Debian package
+--------------
+
+.. warning:: Available soon 
+
+Python packages 
+-------------
+
+.. warning:: Available soon 
+
+Source code
+-----------
+
+.. warning:: Available soon 
+
+
+INRIA Gforge project : https://gforge.inria.fr/projects/slideotracker
+
+
+Usage
+=====
+
+.. 
+
+  Usage: slideotracker.py [options]
+
+  Options:
+  -h, --help            show this help message and exit
+  -i index, --index=index
+                        index file is a simple text file, the first line in
+                        the video path, others lines are paths on slide images
+                        (use ImageMagick, to convert pdf in several images)
+  -p PRECISION, --precision=PRECISION
+                        precision in number of frame (default 25)
+  -o OUTFILE, --out=OUTFILE
+                        output file name, by default results.js
+  -f FORMAT, --format=FORMAT
+                        output file format js (default),csv
+  -d, --debug           debug trace
+
+
 Usage
 =====
 
@@ -48,33 +90,19 @@ Usage
 Example 
 -------
 
-.. 
-  <iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/74yZJ63h-Ow" frameborder="0" allowfullscreen></iframe>
+Real test
+_________
 
-Usage
-=====
+Download and extract : 
+  http://slideotracker.gforge.inria.fr/demo/demo.tar.gz
+  
+Run ::
 
-.. 
-
-  Usage: slideotracker.py [options]
-
-  Options:
-  -h, --help            show this help message and exit
-  -i index, --index=index
-                        index file is a simple text file, the first line in
-                        the video path, others lines are paths on slide images
-                        (use ImageMagick, to convert pdf in several images)
-  -p PRECISION, --precision=PRECISION
-                        precision in number of frame (default 25)
-  -o OUTFILE, --out=OUTFILE
-                        output file name, by default results.js
-  -f FORMAT, --format=FORMAT
-                        output file format js (default),csv
-  -d, --debug           debug trace
+  slideo -i tests/data/test.txt
 
 
-Example 
--------
+Common use
+__________
 
 .. code-block:: bash
 
@@ -113,14 +141,14 @@ Results in CSV format :
 
 Display results in HTML5
 ========================
-Open the following file with your browser 
+Open the following file with your browser ::
 
-slideotracker/player.html?mediafile=data/video.ogv&slidedir=data/slides&fps=25
+/usr/share/slideo/html/player.html?mediafile=data/video.ogv&slidedir=data/slides&fps=25
 
 Dependencies
 ============
 
-  * Scikit-Learn 
+  * scikit-learn 
   * OpenCV 2.1 
 
 TODO/Roadmap
@@ -130,20 +158,10 @@ TODO/Roadmap
   * optimize time computing
   * documentation / How it works 
 
- 
-Copyright
-=========
-GNU AFFERO GENERAL PUBLIC LICENSE v3
-
 Credits
 =======
   * Images used for the logo : Dropline Nuovo! from http://art.gnome.org/themes/icon
   * RMLL 2010 video for the data test
 
-
-Dependancies
-============
- * python-opencv = 2.0
- * scikit-learn > 0.4.3 
  
 

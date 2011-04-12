@@ -1,5 +1,7 @@
+dist/
 build/
 durex.env
 doc/build/*
 *.pyc
 *.*~
+MANIFEST

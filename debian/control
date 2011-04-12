@@ -1,0 +1,17 @@
+Source: slideo
+Maintainer: Sebastien Campion <seb@scamp.fr>
+Section: python
+Priority: optional
+Build-Depends: python (>= 2.6), debhelper (>= 7.4)
+Standards-Version: 3.9.1
+XS-Python-Version: >= 2.6
+
+Package: slideo
+Architecture: all
+Depends: python-opencv (>= 2.0), python-scikits-learn (>= 0.4.3), ${misc:Depends}, ${python:Depends}
+Description: Synchronize slides with the corresponding video recording us
+ .
+     Based on computer vision algorithms, this software enables
+     to synchronize slides with the corresponding video recording
+     slideotracker = slides + video + tracking
+ .

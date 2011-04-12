@@ -1,0 +1,10 @@
+setup.py
+scripts/slideo
+slideo/__init__.py
+slideo/homography.py
+slideo/ransac.py
+slideo/slideotracker.py
+graft html
+graft doc/
+prune doc/build
+include VERSION
