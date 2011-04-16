@@ -1,4 +1,11 @@
-slideo (0.2.6) unstable; urgency=low
+slideo (0.2.7) stable; urgency=low
+
+  * fix opencv bug source package automatically created by stdeb 0.6.0+git
+
+ -- Sebastien Campion <seb@scamp.fr>  Tue, 12 Apr 2011 14:37:46 +0200
+
+
+slideo (0.2.6) stable; urgency=low
 
   * source package automatically created by stdeb 0.6.0+git
 

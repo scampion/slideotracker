@@ -95,5 +95,5 @@ doctest:
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
 push: html text
-	scp -r  $(BUILDDIR)/html/* scm:/home/groups/slideotracker/htdocs
+	scp -r  $(BUILDDIR)/html/* scampion@scm.gforge.inria.fr:/home/groups/slideotracker/htdocs
 	cp  source/index.rst ../README.rst

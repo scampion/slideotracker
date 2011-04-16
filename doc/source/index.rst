@@ -157,6 +157,9 @@ TODO/Roadmap
   * geometric robustification ... in progress
   * optimize time computing
   * documentation / How it works 
+  * ACMMM 
+  
+     * give exectution times 
 
 Credits
 =======

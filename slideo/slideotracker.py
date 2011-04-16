@@ -54,7 +54,7 @@ class SlideoTracker:
         print '#Compute slides features ...'
         self.slidefeats = dict([(id, self._image_feats_by_file(path))
                                 for id, path in self.slidepaths.items()])
-        self.slideclfs = dict([(id, knn.Neighbors(n_neighbors=2).fit(vt))
+        self.slideclfs = dict([(id, knn.Neighbors(k=2).fit(vt))
                                for id, (kp, vt) in self.slidefeats.items()])
         self.slideims = dict([(id, self._convert_image(p))
                                for id, p in self.slidepaths.items()])
@@ -118,7 +118,7 @@ class SlideoTracker:
         #print 'select best kp'
         tkp, tvt = self.slidefeats[slide_id]
         clf = self.slideclfs[slide_id]
-        dist, ind = clf.kneighbors(fvt, n_neighbors=2)
+        dist, ind = clf.kneighbors(fvt, k=2)
         f_dist, s_dist = np.hsplit(dist, 2)
         f_ind, s_ind = np.hsplit(ind, 2)
         best_fkp_ind = np.flatnonzero((f_dist / s_dist) < self.RATIO_KNN)
@@ -164,7 +164,7 @@ class SlideoTracker:
         frame_gray = cv.CreateImage(cv.GetSize(frame), frame.depth, 1)
         fn = 0
         while frame:
-            cv.ConvertImage(frame, frame_gray)
+            cv.CvtColor(frame, frame_gray, cv.CV_RGB2GRAY)
             kp, vt = self._image_feats(frame_gray)
             yield fn, (kp, vt), frame_gray
 
@@ -183,7 +183,7 @@ class SlideoTracker:
     def _convert_image(self, filepath):
         im = cv.LoadImage(filepath, 1)
         im_gray = cv.CreateImage(cv.GetSize(im), im.depth, 1)
-        cv.ConvertImage(im, im_gray)
+        cv.CvtColor(im, im_gray, cv.CV_RGB2GRAY)
         return im_gray
 
     def _image_feats_by_file(self, filepath):
