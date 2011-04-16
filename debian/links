@@ -1,1 +1,2 @@
-/usr/share/slideo/scripts/slideo /usr/bin/slideo
+/usr/share/slideotracker/scripts/slideotracker /usr/bin/slideotracker
+/usr/share/slideotracker/lib/slideo /usr/lib/python2.6/dist-packages/slideo

@@ -6,7 +6,7 @@ import slideo
 
 version = open('VERSION').readline().rstrip()
 
-setup(name='slideo',
+setup(name='slideotracker',
       version=version,
       author='Sebastien Campion',
       author_email='seb@scamp.fr',
@@ -15,7 +15,7 @@ setup(name='slideo',
       description='Synchronize slides with the corresponding video recording using computer vision algorithms IDDN.FR.001.100021.000.S.P.2011.000.40000',
       long_description=slideo.SlideoTracker.__doc__,
       packages = ['slideo'],
-      scripts = ['scripts/slideo'],
+      scripts = ['scripts/slideotracker'],
       keywords='synchronise slides videos',
       license='Lesser Affero General Public License v3',
       classifiers=['Development Status :: 5 - Production/Stable',

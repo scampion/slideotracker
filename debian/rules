@@ -7,7 +7,7 @@
 	dh $@ --with python2
 
 override_dh_auto_install:
-	python setup.py install --root=debian/slideo --install-layout=deb --install-lib=/usr/share/slideo --install-scripts=/usr/share/slideo
+	python setup.py install --root=debian/slideotracker --install-layout=deb --install-lib=/usr/share/slideotracker/lib/ --install-scripts=/usr/share/slideotracker/scripts
 
 override_dh_auto_build:
 

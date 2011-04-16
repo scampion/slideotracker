@@ -1,12 +1,15 @@
 clean:
 	-find . -name '*~' -exec rm {} \;
 	-rm MANIFEST
+	-debuild clean 
+	-rm -Rf build
+	-rm -Rf dist
 
-deb: 
+deb: clean
 	debuild binary
 	scp -r ../*.deb scm:/home/groups/slideotracker/htdocs/debs/	
 
-pydist:
+pydist:	clean
 	python setup.py bdist
 	python setup.py sdist
 	scp -r dist/* scm:/home/groups/slideotracker/htdocs/dist/

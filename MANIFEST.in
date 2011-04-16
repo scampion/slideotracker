@@ -1,5 +1,5 @@
 setup.py
-scripts/slideo
+scripts/slideotracker
 slideo/__init__.py
 slideo/homography.py
 slideo/ransac.py
