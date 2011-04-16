@@ -8,7 +8,7 @@ XS-Python-Version: >= 2.6
 
 Package: slideo
 Architecture: all
-Depends: python-opencv (>= 2.0), python-scikits-learn (>= 0.4.3), ${misc:Depends}, ${python:Depends}
+Depends: python-opencv (>= 2.1), python-scikits-learn (>= 0.4.3), ${misc:Depends}, ${python:Depends}
 Description: Synchronize slides with the corresponding video recording us
  .
      Based on computer vision algorithms, this software enables
