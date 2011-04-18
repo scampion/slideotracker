@@ -2,7 +2,7 @@ from distutils.core import setup
 import sys
 
 sys.path.append('slideo')
-import slideo
+import slideo.slideotracker as slideo
 
 version = open('VERSION').readline().rstrip()
 

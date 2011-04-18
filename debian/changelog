@@ -1,3 +1,10 @@
+slideotracker (0.2.8) stable; urgency=low
+
+  * Non-maintainer upload.
+  * Use homography from opencv
+
+ -- Sebastien Campion <sebastien.campion@inria.fr>  Mon, 18 Apr 2011 14:56:43 +0200
+
 slideotracker (0.2.7) stable; urgency=low
 
   * fix opencv bug source package automatically created by stdeb 0.6.0+git
