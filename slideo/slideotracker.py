@@ -19,34 +19,32 @@ from __future__ import division
 import numpy as np
 import math
 import os
-import logging
 from scikits.learn import neighbors as knn
 import cv
-import homography
-import ransac
 import operator
 import time
 
 np.set_printoptions(suppress=True, precision=2)
 
+
 class SlideoTracker:
     """
-    This software enables to synchronize slides with the corresponding 
+    This software enables to synchronize slides with the corresponding
     video recording.
     slideotracker = slides + video + tracking
     """
     HESSIAN_THRESHOLD = 100
     RATIO_KNN = 0.8
     RANSAC_ITER_RATIO = 10
-    RANSAC_ITER  = 100
+    RANSAC_ITER = 100
     MIN_H_POINTS = 20
     MATCH_THRESHOLD = 50
-    
+    HOMO_ERROR_THRESHOLD = 1
     DISTS_WEIGHT = 1
-    RANSAC_WEIGHT = 2
+    RANSAC_WEIGHT = 0.5
     SCALE_RATIO_WEIGHT = 1
-       
-    THRESHOLD = 1
+    THRESHOLD = 0.5
+
     def __init__(self, videopath, slidepaths, frame_rate=25, debug=False):
         self.frame_rate = frame_rate
         self.videopath = videopath
@@ -74,48 +72,45 @@ class SlideoTracker:
                 st0 = time.time()
                 f, t, dist = self._best_kp(slide_id, (fkp, fvt))
                 st1 = time.time()
-            
+
                 # 2 : geometric robustification
                 t0 = time.time()
                 nb_inliners, scale_ratio = self._ransac(f, t)
                 t1 = time.time()
-                #geoscore = nb_inliners / (math.sqrt(f.shape[0] * t.shape[0]))
-                geoscore = nb_inliners / f.shape[0]
+                geoscore = nb_inliners ** 2 / f.shape[0]
+                #geoscore = nb_inliners / math.sqrt(f.shape[0] * t.shape[0])
 
-                s = -1 
-                if geoscore != 0:
-                    s = math.log(scale_ratio * self.SCALE_RATIO_WEIGHT) +\
-                        math.log((1 - dist) * self.DISTS_WEIGHT) +\
-                        math.log(geoscore * self.RANSAC_WEIGHT)
-                    s *= -1
-                scores[slide_id] = s 
-                    
+                s = math.log(scale_ratio * self.SCALE_RATIO_WEIGHT) +\
+                    math.log((1 - dist) * self.DISTS_WEIGHT) +\
+                    math.log(geoscore * self.RANSAC_WEIGHT)
+                s *= -1
+                scores[slide_id] = s
+
                 if self.debug:
-                    m = ''                    
-                    m += '| %0.2f score ' % s                    
+                    m = ''
+                    m += '| %0.2f score ' % s
                     m += '| %0.3f dist ' % dist
-                    m += '| %04d  inliners ' % nb_inliners
                     m += '| %0.3f geoscore ' % geoscore
                     m += '| %0.3f sr ' % scale_ratio
-                    m += '|| %04d ip '% f.shape[0]
+                    m += '| %04d  inliners ' % nb_inliners
+                    m += '| %04d ip ' % f.shape[0]
                     m += '| %04d op' % t.shape[0]
                     m += '| %05s ' % slide_id
-                    m += '| %0.3f r time  ' % (t1-t0)
-                    m += '| %0.3f tot time' %  (t1-t0+st1-st0)
+                    m += '| %0.3f r time  ' % (t1 - t0)
+                    m += '| %0.3f tot time' % (t1 - t0 + st1 - st0)
                     m += '| %s' % os.path.basename(slide_path)
-                    if s > 0 :
-                        print m 
+                    print m
                     sim = self.slideims[slide_id]
                     self._save(frame, sim, f, t,
                                "%05d-%s.jpg" % (frame_id, str(slide_id)))
 
             slide_id = min(scores.iteritems(), key=operator.itemgetter(1))[0]
-            if scores[slide_id]  < self.THRESHOLD :
-                yield frame_id, self.slidepaths[slide_id]
-                    
+            if scores[slide_id] < self.THRESHOLD:
+                result = frame_id, self.slidepaths[slide_id]
+                print "Sync done : ", result
+                yield result
 
     def _best_kp(self, slide_id, (fkp, fvt)):
-        #print 'select best kp'
         tkp, tvt = self.slidefeats[slide_id]
         clf = self.slideclfs[slide_id]
         dist, ind = clf.kneighbors(fvt, k=2)
@@ -129,29 +124,31 @@ class SlideoTracker:
                     for a
                     in [fkp[best_fkp_ind], tkp[best_tkp_ind]]]
         dist = np.mean(f_dist[best_fkp_ind])
-        return fkp, tkp, dist    
- 
+        return fkp, tkp, dist
+
     def _ransac(self, fkp, tkp):
-        #minp = max(self.MIN_H_POINTS, int(len(fkp) * self.RATIO_HOM))        
-        fsize, tsize = [a.shape[0] for a in [fkp, tkp]]
-        fkp, tkp = [a.T  for a in [fkp, tkp]]
-        fkp, tkp = [np.vstack((a, np.ones((1, s))))
-                    for a, s in zip([fkp, tkp], [fsize, tsize])]
-        #maxiter = self.RANSAC_ITER_RATIO * fsize
-        maxiter = self.RANSAC_ITER
-        try:
-            H, r = homography.H_from_ransac(fkp, tkp,
-                                            homography.ransac_model(),
-                                            maxiter=maxiter,
-                                            match_theshold=self.MATCH_THRESHOLD,
-                                            minp=self.MIN_H_POINTS)
-        except ransac.RansacError:
-            return 0, 0 
-        except np.linalg.LinAlgError:
-            return 0, 0         
+        H = cv.CreateMat(3, 3, cv.CV_32FC1)
+        cv.FindHomography(cv.fromarray(fkp), cv.fromarray(tkp), H,
+                          method=cv.CV_RANSAC, ransacReprojThreshold=5)
+        H = np.array(H)
         sx = abs(H[0][0])
         sy = abs(H[1][1])
-        return len(r['inliers']), min(sx, sy) / max(sx, sy)
+        scale_ratio = min(sx, sy) / max(sx, sy)
+        nb_inliners = self._get_nb_inliers(H, fkp, tkp)
+        return nb_inliners, scale_ratio
+
+    def _get_nb_inliers(self, h, fkp, tkp):
+        ff = np.hstack((fkp, np.ones((len(fkp), 1))))
+        inliners = 0
+        #TODO use array.dot with numpy >= 1.5
+        for i, p in enumerate(ff):  # for each
+            p_t = np.dot(h, p)  # appy homography
+            p_t /= p_t[2]  # normalize
+            p_t = p_t[:2]  # keep x, y values
+            error = np.sqrt(np.sum((tkp[i] - p_t) ** 2, axis=0))
+            if error <= self.HOMO_ERROR_THRESHOLD:
+                inliners += 1
+        return inliners
 
     def _video_feats(self):
         '''
@@ -191,15 +188,15 @@ class SlideoTracker:
         return self._image_feats(im_gray)
 
     def _save(self, fim, tim, fkp, tkp, ofile):
-        import Image, ImageDraw 
+        import Image
+        import ImageDraw
         fim, tim = [Image.fromstring("L", cv.GetSize(i), i.tostring())
                     for i in [fim, tim]]
         rsize = (fim.size[0] + tim.size[0], max(fim.size[1], tim.size[1]))
         rim = Image.new('RGB', rsize)
         rim.paste(fim, box=(0, 0))
         rim.paste(tim, box=(fim.size[0], 0))
-        
-        d = ImageDraw.Draw(rim)         
+        d = ImageDraw.Draw(rim)
         for (x1, y1), (x2, y2) in zip(fkp, tkp):
-            d.line(((x1,y1),(x2+fim.size[0],y2)), fill='red')            
-        rim.save(ofile) 
+            d.line(((x1, y1), (x2 + fim.size[0], y2)), fill='red')
+        rim.save(ofile)

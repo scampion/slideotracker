@@ -18,3 +18,10 @@ uptest:
 	tar -pczf  /tmp/demo.tar.gz tests/data/videos/video.avi tests/data/slides/ tests/data/test.txt
 	scp /tmp/demo.tar.gz scm:/home/groups/slideotracker/htdocs/demo/
 
+test:
+	@echo "coverage"
+	find slideo scripts -name '*.py' -exec pyflakes {} \;
+	@echo "PEP8"
+	find slideo scripts -name '*.py' -exec pep8 {} \;
+
+	
