@@ -9,6 +9,8 @@ Based on computer vision algorithms, this software enables to synchronize slides
 
 .. note:: slideotracker = slides + video + tracking
 
+* Author : Sebastien Campion / INRIA Texmex Team / http://www.irisa.fr/texmex
+
 Licence
 =======
 GNU AFFERO GENERAL PUBLIC LICENSE v3
@@ -27,20 +29,19 @@ Download
 Debian package
 --------------
 
-.. warning:: Available soon 
+make deb
+
 
 Python packages 
 -------------
 
-.. warning:: Available soon 
+make pydist
+
 
 Source code
 -----------
 
-.. warning:: Available soon 
-
-
-INRIA Gforge project : https://gforge.inria.fr/projects/slideotracker
+https://github.com/scampion/slideotracker
 
 
 Usage
@@ -157,9 +158,6 @@ TODO/Roadmap
   * geometric robustification ... in progress
   * optimize time computing
   * documentation / How it works 
-  * ACMMM 
-  
-     * give exectution times 
 
 Credits
 =======
